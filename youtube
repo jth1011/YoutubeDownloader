@@ -1,0 +1,47 @@
+#!/bin/bash
+
+if [ $(ls /home/pi/ | grep "MP4_Download" | wc -m) == 0 ]; then #Validates download folder
+	mkdir ~/MP4_Download
+fi
+if [ $(ls /home/pi/ | grep "MP3_Extract" | wc -m) == 0 ]; then #Validates extraction folder
+	mkdir ~/MP3_Extract
+fi
+if [ $(ls /home/pi/ | grep "Scripts" | wc -l) == 0 ]; then #Validate scripts folder
+	mkdir ~/Scripts/
+fi
+if [ $(ls /home/pi/ | grep "TelegramBot" | wc -l) == 0 ]; then #Validate python scripts folder
+	mkdir ~/TelegramBot
+fi
+
+if [ $(ls /home/pi/TelegramBot/ | grep "youtube.py" | wc -l) == 0 ]; then #Validate existence of youtube.py
+	wget -x /home/pi/TelegramBot/youtube.py https://drive.google.com/uc?export=download&id=13J4e9yquIFxTZk3l_TiLo2JRndMjCjf4
+fi
+
+id=$(python /home/pi/TelegramBot/youtube.py $1) #Get Video ID from Youtube API
+url="https://www.youtube.com/watch?v="$id       #Append ID to base video  URL
+
+if [ $(ls /home/pi/MP4_Download/ | wc -m) != 0 ]; then #Clear download folder if anything is inside
+	rm -r /home/pi/MP4_Download/*
+fi
+
+you-get -o /home/pi/MP4_Download $url #Download video that corresponds to URL
+
+if [ $(ls /home/pi/Scripts/ | grep "collect" | wc -l) == 0 ]; then
+	wget -x /home/pi/Scripts/collect.sh https://drive.google.com/uc?export=download&id=1DBTPc3r57kIg84iTniyAhoMNiw_0CRr3
+fi
+
+if [ $(ls /home/pi/MP4_Download/ | grep mp4 | wc -l) != 0 ]; then #Collect video name and save as mp3 (mp4 video)
+	name=$(/home/pi/Scripts/collect.sh $(exiftool /home/pi/MP4_Download/*.mp4 | grep "File Name"))
+	name=${name:0:${#name}-4}
+	name=$(echo $name | tr . " ")
+	name=${name:0:${#name}-1}
+	ffmpeg -i /home/pi/MP4_Download/*.mp4 -q:a 0 -map a /home/pi/MP3_Extract/"$name".mp3
+        #ffmpeg -i /home/pi/MP4_Download/*.mp4 /home/pi/MP3_Extract/$name.mp3
+fi
+if [ $(ls /home/pi/MP4_Download/ | grep webm | wc -l) != 0 ]; then #Collect video name and save as mp3 (webm video)
+	name=$(/home/pi/Scripts/collect.sh $(exiftool /home/pi/MP4_Download/*.webm | grep "File Name"))
+	name=${name:0:${#name}-5}
+	name=$(echo $name | tr . " ")
+	name=${name:0:${#name}-1}
+        ffmpeg -i /home/pi/MP4_Download/*.webm -q:a 0 -map a /home/pi/MP3_Extract/"$name".mp3
+fi
