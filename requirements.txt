@@ -1,3 +1,4 @@
 ###### Requirements ######
+requests
 pytube3
 ffmpeg-python
