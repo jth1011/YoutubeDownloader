@@ -76,7 +76,13 @@ class Stream:
 
         # The player configuration, contains info like the video title.
         self.player_config_args = player_config_args
-
+    
+    def get_abr(self) -> bool:
+        return self.abr
+    
+    def get_fr(self) -> bool:
+        return self.resolution
+    
     @property
     def is_adaptive(self) -> bool:
         """Whether the stream is DASH.
