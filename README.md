@@ -1,3 +1,3 @@
-# YoutubeToMp3
+# YoutubeDownloader
 
-go away
+Download videos or audio from youtube
